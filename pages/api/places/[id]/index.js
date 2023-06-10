@@ -1,17 +1,22 @@
-import { places } from '../../../../lib/db.js';
+import dbConnect from "../../../../db/connect.js";
+import Location from "../../../../db/models/Location";
 
-export default function handler(request, response) {
+export default async function handler(request, response) {
+  await dbConnect();
   const { id } = request.query;
 
   if (!id) {
     return;
   }
 
-  const place = places.find((place) => place.id === id);
+  if (request.method === "GET") {
+    const place = await Location.findById(id);
 
-  if (!place) {
-    return response.status(404).json({ status: 'Not found' });
+    if (!place) {
+      response.status(404).json({ status: "Not found" });
+      return;
+    }
+    response.status(200).json(place);
+    return;
   }
-
-  response.status(200).json(place);
 }
